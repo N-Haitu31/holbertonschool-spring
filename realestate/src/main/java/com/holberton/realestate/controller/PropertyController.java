@@ -3,6 +3,7 @@ package com.holberton.realestate.controller;
 import com.holberton.realestate.dto.PropertyRequest;
 import com.holberton.realestate.dto.PropertyResponse;
 import com.holberton.realestate.service.PropertyService;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class PropertyController {
     }
 
     @PostMapping
-    public ResponseEntity<PropertyResponse> create(@RequestBody PropertyRequest request) {
+    public ResponseEntity<PropertyResponse> create(@Valid @RequestBody PropertyRequest request) {
         return service.create(request)
                 .map(p -> ResponseEntity
                         .created(URI.create("/api/properties/" + p.reference()))
@@ -50,7 +51,7 @@ public class PropertyController {
 
     @PutMapping("/{reference}")
     public ResponseEntity<PropertyResponse> update(@PathVariable String reference,
-            @RequestBody PropertyRequest request) {
+            @Valid @RequestBody PropertyRequest request) {
         return service.update(reference, request)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
