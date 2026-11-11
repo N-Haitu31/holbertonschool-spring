@@ -1,65 +1,71 @@
 package com.holberton.realestate.service;
 
 import com.holberton.realestate.dto.PropertyRequest;
-import com.holberton.realestate.model.Address;
-import com.holberton.realestate.model.EnergyClass;
 import com.holberton.realestate.model.Property;
-import java.util.ArrayList;
-import java.util.Comparator;
+import com.holberton.realestate.repository.PropertyRepository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PropertyService {
-    private final List<Property> properties = new ArrayList<>();
+    private static final Sort BY_REFERENCE = Sort.by("reference");
 
-    public PropertyService() {
-        properties.add(new Property("P-001",
-                new Address("12 Rue de la Paix", "75002", "Paris"), 25, 950, EnergyClass.D));
-        properties.add(new Property("P-002",
-                new Address("8 Chemin des Vignes", "33000", "Bordeaux"), 120, 1800, EnergyClass.B));
-        properties.add(new Property("P-003",
-                new Address("1 Place Bellecour", "69002", "Lyon"), 80, 2500, EnergyClass.C));
+    private final PropertyRepository repository;
+
+    public PropertyService(PropertyRepository repository) {
+        this.repository = repository;
     }
 
     public List<Property> findAll() {
-        return properties.stream()
-                .sorted(Comparator.comparing(Property::getReference))
-                .toList();
+        return repository.findAll(BY_REFERENCE);
+    }
+
+    // c'est le service qui choisit la méthode du repository selon les paramètres reçus
+    public List<Property> search(String city, Integer maxRent) {
+        if (city != null && maxRent != null) {
+            return repository.findByAddressCityIgnoreCaseAndMonthlyRentLessThanEqual(
+                    city, maxRent, BY_REFERENCE);
+        }
+        if (city != null) {
+            return repository.findByAddressCityIgnoreCase(city, BY_REFERENCE);
+        }
+        if (maxRent != null) {
+            return repository.findByMonthlyRentLessThanEqual(maxRent, BY_REFERENCE);
+        }
+        return findAll();
     }
 
     public Optional<Property> findByReference(String reference) {
-        return properties.stream()
-                .filter(p -> p.getReference().equals(reference))
-                .findFirst();
+        return repository.findByReference(reference);
     }
 
     // Optional vide = la référence existe déjà
     public Optional<Property> create(PropertyRequest request) {
-        if (findByReference(request.reference()).isPresent()) {
+        if (repository.existsByReference(request.reference())) {
             return Optional.empty();
         }
         Property property = new Property(request.reference(), request.address(),
                 request.surface(), request.monthlyRent(), request.energyClass());
-        properties.add(property);
-        return Optional.of(property);
+        return Optional.of(repository.save(property));
     }
 
     // Optional vide = référence inconnue ; la référence du corps est ignorée
     public Optional<Property> update(String reference, PropertyRequest request) {
-        Optional<Property> found = findByReference(reference);
-        found.ifPresent(p -> {
+        return repository.findByReference(reference).map(p -> {
             p.setAddress(request.address());
             p.setSurface(request.surface());
             p.setMonthlyRent(request.monthlyRent());
             p.setEnergyClass(request.energyClass());
+            return repository.save(p);
         });
-        return found;
     }
 
     // false = référence inconnue
     public boolean delete(String reference) {
-        return properties.removeIf(p -> p.getReference().equals(reference));
+        Optional<Property> found = repository.findByReference(reference);
+        found.ifPresent(repository::delete);
+        return found.isPresent();
     }
 }
