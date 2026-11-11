@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,8 +27,9 @@ public class PropertyController {
     }
 
     @GetMapping
-    public List<Property> list() {
-        return service.findAll();
+    public List<Property> list(@RequestParam(required = false) String city,
+            @RequestParam(required = false) Integer maxRent) {
+        return service.search(city, maxRent);
     }
 
     @GetMapping("/{reference}")
@@ -48,7 +50,7 @@ public class PropertyController {
 
     @PutMapping("/{reference}")
     public ResponseEntity<Property> update(@PathVariable String reference,
-                                           @RequestBody PropertyRequest request) {
+            @RequestBody PropertyRequest request) {
         return service.update(reference, request)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
