@@ -3,10 +3,11 @@ package com.holberton.realestate.service;
 import com.holberton.realestate.dto.PropertyMapper;
 import com.holberton.realestate.dto.PropertyRequest;
 import com.holberton.realestate.dto.PropertyResponse;
+import com.holberton.realestate.exception.DuplicateReferenceException;
+import com.holberton.realestate.exception.PropertyNotFoundException;
 import com.holberton.realestate.model.Property;
 import com.holberton.realestate.repository.PropertyRepository;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -38,35 +39,35 @@ public class PropertyService {
         return findAll();
     }
 
-    public Optional<PropertyResponse> findByReference(String reference) {
-        return repository.findByReference(reference).map(PropertyMapper::toResponse);
+    public PropertyResponse findByReference(String reference) {
+        return repository.findByReference(reference)
+                .map(PropertyMapper::toResponse)
+                .orElseThrow(() -> new PropertyNotFoundException(reference));
     }
 
-    // Optional vide = la référence existe déjà
-    public Optional<PropertyResponse> create(PropertyRequest request) {
+    public PropertyResponse create(PropertyRequest request) {
         if (repository.existsByReference(request.reference())) {
-            return Optional.empty();
+            throw new DuplicateReferenceException(request.reference());
         }
         Property saved = repository.save(PropertyMapper.toEntity(request));
-        return Optional.of(PropertyMapper.toResponse(saved));
+        return PropertyMapper.toResponse(saved);
     }
 
-    // Optional vide = référence inconnue ; la référence du corps est ignorée
-    public Optional<PropertyResponse> update(String reference, PropertyRequest request) {
-        return repository.findByReference(reference).map(p -> {
-            p.setAddress(request.address());
-            p.setSurface(request.surface());
-            p.setMonthlyRent(request.monthlyRent());
-            p.setEnergyClass(request.energyClass());
-            return PropertyMapper.toResponse(repository.save(p));
-        });
+    // la référence du corps est ignorée
+    public PropertyResponse update(String reference, PropertyRequest request) {
+        Property property = repository.findByReference(reference)
+                .orElseThrow(() -> new PropertyNotFoundException(reference));
+        property.setAddress(request.address());
+        property.setSurface(request.surface());
+        property.setMonthlyRent(request.monthlyRent());
+        property.setEnergyClass(request.energyClass());
+        return PropertyMapper.toResponse(repository.save(property));
     }
 
-    // false = référence inconnue
-    public boolean delete(String reference) {
-        Optional<Property> found = repository.findByReference(reference);
-        found.ifPresent(repository::delete);
-        return found.isPresent();
+    public void delete(String reference) {
+        Property property = repository.findByReference(reference)
+                .orElseThrow(() -> new PropertyNotFoundException(reference));
+        repository.delete(property);
     }
 
     private List<PropertyResponse> toResponses(List<Property> properties) {
