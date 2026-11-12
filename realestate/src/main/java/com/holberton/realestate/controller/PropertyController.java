@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -34,34 +35,27 @@ public class PropertyController {
     }
 
     @GetMapping("/{reference}")
-    public ResponseEntity<PropertyResponse> get(@PathVariable String reference) {
-        return service.findByReference(reference)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public PropertyResponse get(@PathVariable String reference) {
+        return service.findByReference(reference);
     }
 
     @PostMapping
     public ResponseEntity<PropertyResponse> create(@Valid @RequestBody PropertyRequest request) {
-        return service.create(request)
-                .map(p -> ResponseEntity
-                        .created(URI.create("/api/properties/" + p.reference()))
-                        .body(p))
-                .orElse(ResponseEntity.status(HttpStatus.CONFLICT).build());
+        PropertyResponse created = service.create(request);
+        return ResponseEntity
+                .created(URI.create("/api/properties/" + created.reference()))
+                .body(created);
     }
 
     @PutMapping("/{reference}")
-    public ResponseEntity<PropertyResponse> update(@PathVariable String reference,
+    public PropertyResponse update(@PathVariable String reference,
             @Valid @RequestBody PropertyRequest request) {
-        return service.update(reference, request)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return service.update(reference, request);
     }
 
     @DeleteMapping("/{reference}")
-    public ResponseEntity<Void> delete(@PathVariable String reference) {
-        if (service.delete(reference)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable String reference) {
+        service.delete(reference);
     }
 }
