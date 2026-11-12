@@ -1,5 +1,6 @@
 package com.holberton.realestate.controller;
 
+import com.holberton.realestate.dto.OwnerAssignmentRequest;
 import com.holberton.realestate.dto.PropertyRequest;
 import com.holberton.realestate.dto.PropertyResponse;
 import com.holberton.realestate.service.PropertyService;
@@ -29,7 +30,8 @@ public class PropertyController {
     }
 
     @GetMapping
-    public List<PropertyResponse> list(@RequestParam(required = false) String city,
+    public List<PropertyResponse> list(
+            @RequestParam(required = false) String city,
             @RequestParam(required = false) Integer maxRent) {
         return service.search(city, maxRent);
     }
@@ -49,7 +51,7 @@ public class PropertyController {
 
     @PutMapping("/{reference}")
     public PropertyResponse update(@PathVariable String reference,
-            @Valid @RequestBody PropertyRequest request) {
+                                   @Valid @RequestBody PropertyRequest request) {
         return service.update(reference, request);
     }
 
@@ -57,5 +59,11 @@ public class PropertyController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable String reference) {
         service.delete(reference);
+    }
+
+    @PutMapping("/{reference}/owner")
+    public PropertyResponse assignOwner(@PathVariable String reference,
+                                        @Valid @RequestBody OwnerAssignmentRequest request) {
+        return service.assignOwner(reference, request.ownerId());
     }
 }

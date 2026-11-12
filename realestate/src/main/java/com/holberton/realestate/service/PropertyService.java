@@ -4,8 +4,11 @@ import com.holberton.realestate.dto.PropertyMapper;
 import com.holberton.realestate.dto.PropertyRequest;
 import com.holberton.realestate.dto.PropertyResponse;
 import com.holberton.realestate.exception.DuplicateReferenceException;
+import com.holberton.realestate.exception.OwnerNotFoundException;
 import com.holberton.realestate.exception.PropertyNotFoundException;
+import com.holberton.realestate.model.Owner;
 import com.holberton.realestate.model.Property;
+import com.holberton.realestate.repository.OwnerRepository;
 import com.holberton.realestate.repository.PropertyRepository;
 import java.util.List;
 import org.springframework.data.domain.Sort;
@@ -16,9 +19,11 @@ public class PropertyService {
     private static final Sort BY_REFERENCE = Sort.by("reference");
 
     private final PropertyRepository repository;
+    private final OwnerRepository ownerRepository;
 
-    public PropertyService(PropertyRepository repository) {
+    public PropertyService(PropertyRepository repository, OwnerRepository ownerRepository) {
         this.repository = repository;
+        this.ownerRepository = ownerRepository;
     }
 
     public List<PropertyResponse> findAll() {
@@ -68,6 +73,15 @@ public class PropertyService {
         Property property = repository.findByReference(reference)
                 .orElseThrow(() -> new PropertyNotFoundException(reference));
         repository.delete(property);
+    }
+
+    public PropertyResponse assignOwner(String reference, Long ownerId) {
+        Property property = repository.findByReference(reference)
+                .orElseThrow(() -> new PropertyNotFoundException(reference));
+        Owner owner = ownerRepository.findById(ownerId)
+                .orElseThrow(() -> new OwnerNotFoundException(ownerId));
+        property.setOwner(owner);
+        return PropertyMapper.toResponse(repository.save(property));
     }
 
     private List<PropertyResponse> toResponses(List<Property> properties) {
