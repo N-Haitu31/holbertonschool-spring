@@ -9,13 +9,15 @@ public final class PropertyMapper {
     }
 
     public static PropertyResponse toResponse(Property property) {
+        Long ownerId = property.getOwner() == null ? null : property.getOwner().getId();
         return new PropertyResponse(
                 property.getReference(),
                 property.getAddress(),
                 property.getSurface(),
                 property.getMonthlyRent(),
                 property.getEnergyClass(),
-                property.getMonthlyRent() * 12);
+                property.getMonthlyRent() * 12,
+                ownerId);
     }
 
     public static Property toEntity(PropertyRequest request) {

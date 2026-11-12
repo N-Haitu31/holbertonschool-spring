@@ -5,9 +5,12 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -33,12 +36,16 @@ public class Property {
     @Column(nullable = false)
     private EnergyClass energyClass;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id") // nullable par défaut
+    private Owner owner;
+
     protected Property() {
         // utilisé par Hibernate pour reconstruire les objets lus en base
     }
 
     public Property(String reference, Address address, int surface,
-                    int monthlyRent, EnergyClass energyClass) {
+            int monthlyRent, EnergyClass energyClass) {
         this.reference = reference;
         this.address = address;
         this.surface = surface;
@@ -46,14 +53,47 @@ public class Property {
         this.energyClass = energyClass;
     }
 
-    public String getReference() { return reference; }
-    public Address getAddress() { return address; }
-    public int getSurface() { return surface; }
-    public int getMonthlyRent() { return monthlyRent; }
-    public EnergyClass getEnergyClass() { return energyClass; }
+    public String getReference() {
+        return reference;
+    }
 
-    public void setAddress(Address address) { this.address = address; }
-    public void setSurface(int surface) { this.surface = surface; }
-    public void setMonthlyRent(int monthlyRent) { this.monthlyRent = monthlyRent; }
-    public void setEnergyClass(EnergyClass energyClass) { this.energyClass = energyClass; }
+    public Address getAddress() {
+        return address;
+    }
+
+    public int getSurface() {
+        return surface;
+    }
+
+    public int getMonthlyRent() {
+        return monthlyRent;
+    }
+
+    public EnergyClass getEnergyClass() {
+        return energyClass;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
+    public void setSurface(int surface) {
+        this.surface = surface;
+    }
+
+    public void setMonthlyRent(int monthlyRent) {
+        this.monthlyRent = monthlyRent;
+    }
+
+    public void setEnergyClass(EnergyClass energyClass) {
+        this.energyClass = energyClass;
+    }
+
+    public Owner getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Owner owner) {
+        this.owner = owner;
+    }
 }
