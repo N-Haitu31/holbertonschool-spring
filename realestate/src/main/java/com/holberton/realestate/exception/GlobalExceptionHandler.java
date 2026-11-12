@@ -55,4 +55,14 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleOwnerHasProperties(OwnerHasPropertiesException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
+
+    @ExceptionHandler(TenantNotFoundException.class)
+    public ProblemDetail handleTenantNotFound(TenantNotFoundException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(DuplicateTenantEmailException.class)
+    public ProblemDetail handleDuplicateTenantEmail(DuplicateTenantEmailException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
 }
