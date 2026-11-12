@@ -50,4 +50,9 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleDuplicateEmail(DuplicateEmailException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
     }
+
+    @ExceptionHandler(OwnerHasPropertiesException.class)
+    public ProblemDetail handleOwnerHasProperties(OwnerHasPropertiesException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
 }
