@@ -3,6 +3,7 @@ package com.holberton.realestate.exception;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -64,5 +65,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DuplicateTenantEmailException.class)
     public ProblemDetail handleDuplicateTenantEmail(DuplicateTenantEmailException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(LeaseNotFoundException.class)
+    public ProblemDetail handleLeaseNotFound(LeaseNotFoundException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(PropertyUnavailableException.class)
+    public ProblemDetail handlePropertyUnavailable(PropertyUnavailableException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientIncomeException.class)
+    public ProblemDetail handleInsufficientIncome(InsufficientIncomeException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(422), ex.getMessage());
     }
 }
