@@ -81,4 +81,14 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleInsufficientIncome(InsufficientIncomeException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(422), ex.getMessage());
     }
+
+    @ExceptionHandler(LeaseAlreadyEndedException.class)
+    public ProblemDetail handleLeaseAlreadyEnded(LeaseAlreadyEndedException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(PropertyHasLeasesException.class)
+    public ProblemDetail handlePropertyHasLeases(PropertyHasLeasesException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
 }
