@@ -5,14 +5,17 @@ import com.holberton.realestate.dto.PropertyRequest;
 import com.holberton.realestate.dto.PropertyResponse;
 import com.holberton.realestate.exception.DuplicateReferenceException;
 import com.holberton.realestate.exception.OwnerNotFoundException;
+import com.holberton.realestate.exception.PropertyHasLeasesException;
 import com.holberton.realestate.exception.PropertyNotFoundException;
 import com.holberton.realestate.model.Owner;
 import com.holberton.realestate.model.Property;
+import com.holberton.realestate.repository.LeaseRepository;
 import com.holberton.realestate.repository.OwnerRepository;
 import com.holberton.realestate.repository.PropertyRepository;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PropertyService {
@@ -20,16 +23,22 @@ public class PropertyService {
 
     private final PropertyRepository repository;
     private final OwnerRepository ownerRepository;
+    private final LeaseRepository leaseRepository;
 
-    public PropertyService(PropertyRepository repository, OwnerRepository ownerRepository) {
+    public PropertyService(PropertyRepository repository,
+                           OwnerRepository ownerRepository,
+                           LeaseRepository leaseRepository) {
         this.repository = repository;
         this.ownerRepository = ownerRepository;
+        this.leaseRepository = leaseRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<PropertyResponse> findAll() {
         return toResponses(repository.findAll(BY_REFERENCE));
     }
 
+    @Transactional(readOnly = true)
     public List<PropertyResponse> search(String city, Integer maxRent) {
         if (city != null && maxRent != null) {
             return toResponses(repository.findByAddressCityIgnoreCaseAndMonthlyRentLessThanEqual(
@@ -44,6 +53,7 @@ public class PropertyService {
         return findAll();
     }
 
+    @Transactional(readOnly = true)
     public PropertyResponse findByReference(String reference) {
         return repository.findByReference(reference)
                 .map(PropertyMapper::toResponse)
@@ -72,6 +82,9 @@ public class PropertyService {
     public void delete(String reference) {
         Property property = repository.findByReference(reference)
                 .orElseThrow(() -> new PropertyNotFoundException(reference));
+        if (leaseRepository.existsByPropertyReference(reference)) {
+            throw new PropertyHasLeasesException(reference);
+        }
         repository.delete(property);
     }
 

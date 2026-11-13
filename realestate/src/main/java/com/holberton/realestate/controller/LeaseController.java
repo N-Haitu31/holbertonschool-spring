@@ -40,4 +40,9 @@ public class LeaseController {
     public LeaseResponse get(@PathVariable Long id) {
         return service.findById(id);
     }
+
+    @PostMapping("/{id}/end")
+    public LeaseResponse end(@PathVariable Long id) {
+        return service.end(id);
+    }
 }

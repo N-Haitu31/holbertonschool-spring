@@ -3,6 +3,7 @@ package com.holberton.realestate.service;
 import com.holberton.realestate.dto.LeaseRequest;
 import com.holberton.realestate.dto.LeaseResponse;
 import com.holberton.realestate.exception.InsufficientIncomeException;
+import com.holberton.realestate.exception.LeaseAlreadyEndedException;
 import com.holberton.realestate.exception.LeaseNotFoundException;
 import com.holberton.realestate.exception.PropertyNotFoundException;
 import com.holberton.realestate.exception.PropertyUnavailableException;
@@ -55,10 +56,27 @@ public class LeaseService {
             throw new InsufficientIncomeException(tenant.getMonthlyIncome(), requiredIncome);
         }
 
-        // règle 6 : tout est bon, on enregistre (le loyer est copié dans le bail)
+        // règle 6 : on enregistre le bail ET on marque la propriété louée,
+        // dans la même transaction (tout ou rien)
         Lease saved = repository.save(new Lease(
                 property, tenant, request.durationMonths(), property.getMonthlyRent()));
+        property.setRented(true);
+        propertyRepository.save(property);
         return toResponse(saved);
+    }
+
+    @Transactional
+    public LeaseResponse end(Long id) {
+        Lease lease = repository.findById(id)
+                .orElseThrow(() -> new LeaseNotFoundException(id));
+        if (!lease.isActive()) {
+            throw new LeaseAlreadyEndedException(id);
+        }
+        lease.end();
+        Property property = lease.getProperty();
+        property.setRented(false);
+        propertyRepository.save(property);
+        return toResponse(repository.save(lease));
     }
 
     @Transactional(readOnly = true)
