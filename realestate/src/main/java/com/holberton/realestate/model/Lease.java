@@ -43,13 +43,35 @@ public class Lease {
         this.tenant = tenant;
         this.durationMonths = durationMonths;
         this.monthlyRent = monthlyRent;
-        this.active = true;   // un bail qu'on signe est actif
+        this.active = true; // un bail qu'on signe est actif
     }
 
-    public Long getId() { return id; }
-    public Property getProperty() { return property; }
-    public Tenant getTenant() { return tenant; }
-    public int getDurationMonths() { return durationMonths; }
-    public int getMonthlyRent() { return monthlyRent; }
-    public boolean isActive() { return active; }
+    public Long getId() {
+        return id;
+    }
+
+    public Property getProperty() {
+        return property;
+    }
+
+    public Tenant getTenant() {
+        return tenant;
+    }
+
+    public int getDurationMonths() {
+        return durationMonths;
+    }
+
+    public int getMonthlyRent() {
+        return monthlyRent;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void end() {
+        this.active = false;
+    }
+    
 }

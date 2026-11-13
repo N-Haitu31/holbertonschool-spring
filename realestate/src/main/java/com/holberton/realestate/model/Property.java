@@ -44,6 +44,17 @@ public class Property {
         // utilisé par Hibernate pour reconstruire les objets lus en base
     }
 
+    @Column(nullable = false)
+    private boolean rented; // false par défaut
+
+    public boolean isRented() {
+        return rented;
+    }
+
+    public void setRented(boolean rented) {
+        this.rented = rented;
+    }
+
     public Property(String reference, Address address, int surface,
             int monthlyRent, EnergyClass energyClass) {
         this.reference = reference;

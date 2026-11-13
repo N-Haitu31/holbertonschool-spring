@@ -10,5 +10,6 @@ public record PropertyResponse(
         int monthlyRent,
         EnergyClass energyClass,
         int annualRent,
-        Long ownerId) {
+        Long ownerId,
+        boolean rented) {
 }

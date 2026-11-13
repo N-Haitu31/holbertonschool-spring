@@ -17,7 +17,8 @@ public final class PropertyMapper {
                 property.getMonthlyRent(),
                 property.getEnergyClass(),
                 property.getMonthlyRent() * 12,
-                ownerId);
+                ownerId,
+                property.isRented());
     }
 
     public static Property toEntity(PropertyRequest request) {
